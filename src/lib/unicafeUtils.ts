@@ -1,4 +1,40 @@
 import type { UnicafeRestaurants } from '../types/unicafeTypes';
+import { fetchMenu } from './fetchUnicafeMenu';
+
+const getRestaurant = () => {
+  const viikkiRestaurants = [
+    'Tähkä',
+    'Infokeskus alakerta',
+    'Viikuna',
+    'Infokeskus',
+    'Biokeskus',
+  ];
+  const keskustaRestaurants = [
+    'Myöhä Café & Bar',
+    'Kaivopiha',
+    'Kaisa-talo',
+    'Soc&Kom',
+    'Rotunda',
+    'Porthania',
+    'Topelias',
+    'Olivia',
+    'Metsätalo',
+    'Cafe Portaali',
+  ];
+
+  const kumpulaRestaurants = ['Physicum', 'Exactum', 'Chemicum'];
+
+  const meilahtiRestaurants = ['Meilahti'];
+
+  const restaurants = [
+    ...viikkiRestaurants,
+    ...keskustaRestaurants,
+    ...kumpulaRestaurants,
+    ...meilahtiRestaurants,
+  ];
+
+  return restaurants;
+};
 
 export const checkIfFoodIsInWeekOfRestaurant = (
   searchedFood: string,
@@ -6,6 +42,7 @@ export const checkIfFoodIsInWeekOfRestaurant = (
   response: UnicafeRestaurants
 ) => {
   const datesWhenFoodIsAvailable: string[] = [];
+  const foodNames: string[] = [];
 
   const restaurantData = response.find(
     (restaurant) => restaurant.title === restaurantName
@@ -18,12 +55,40 @@ export const checkIfFoodIsInWeekOfRestaurant = (
     dailyMenu.data.forEach((foodItem) => {
       if (foodItem.name.includes(searchedFood)) {
         datesWhenFoodIsAvailable.push(date);
+        foodNames.push(foodItem.name);
       }
     });
   });
 
-  return datesWhenFoodIsAvailable.map((date) =>
-    // format date to "DD.MM"
-    date.split(' ').slice(1).join(' ').slice(0, -1)
-  );
+  // const datesWhenFoodIsAvailableSliced = datesWhenFoodIsAvailable.map((date) =>
+  //   // format date to "DD.MM"
+  //   date.split(' ').slice(1).join(' ').slice(0, -1)
+  // );
+
+  return [datesWhenFoodIsAvailable, foodNames];
+};
+
+export const checkFoodInAllRestaurants = (
+  searchedFood: string,
+  response: UnicafeRestaurants
+) => {
+  const foodAvailability: { [restaurantName: string]: [string, string][] } = {};
+
+  const restaurants = getRestaurant();
+
+  restaurants.forEach((restaurantName) => {
+    const [dates, foodNames] = checkIfFoodIsInWeekOfRestaurant(
+      searchedFood,
+      restaurantName,
+      response
+    );
+    if (dates.length > 0) {
+      foodAvailability[restaurantName] = dates.map((date, index) => [
+        date,
+        foodNames[index],
+      ]);
+    }
+  });
+
+  return foodAvailability;
 };
