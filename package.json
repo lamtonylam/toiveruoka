@@ -1,0 +1,31 @@
+{
+  "name": "toiveruoka",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "ts-node": "node --loader ts-node/esm",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node index.ts",
+    "dev": "ts-node-dev index.ts",
+    "run:unicafe": "tsx src/lib/unicafeUtils.ts",
+    "run": "tsx"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@stylistic/eslint-plugin": "^5.6.1",
+    "@types/eslint__js": "^9.14.0",
+    "eslint": "^9.39.2",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.50.0"
+  },
+  "type": "module",
+  "ts-node": {
+    "preferTsExts": true
+  }
+}
