@@ -1,5 +1,5 @@
 import type { UnicafeRestaurants } from '../types/unicafeTypes';
-import { fetchMenu } from './fetchUnicafeMenu';
+import { checkIfDateIsPast } from './unicafe.utils';
 
 const getRestaurant = () => {
   const viikkiRestaurants = [
@@ -36,28 +36,6 @@ const getRestaurant = () => {
   return restaurants;
 };
 
-const checkIfDateIsPast = (dateString: string): boolean => {
-  const today = new Date();
-
-  const formattedDateString = dateString
-    .split(' ')
-    .slice(1)
-    .join(' ')
-    .slice(0, -1);
-  const dateParts = formattedDateString.split('.');
-  const day = parseInt(dateParts[0]);
-  const month = parseInt(dateParts[1]) - 1; // subtract 1 because months are 0-indexed
-  const dateToCheck = new Date(today.getFullYear(), month, day);
-
-  const startOfToday = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate()
-  );
-
-  return dateToCheck < startOfToday;
-};
-
 export const checkIfFoodIsInWeekOfRestaurant = (
   searchedFood: string,
   restaurantName: string,
@@ -84,11 +62,6 @@ export const checkIfFoodIsInWeekOfRestaurant = (
       }
     });
   });
-
-  // const datesWhenFoodIsAvailableSliced = datesWhenFoodIsAvailable.map((date) =>
-  //   // format date to "DD.MM"
-  //   date.split(' ').slice(1).join(' ').slice(0, -1)
-  // );
 
   return [datesWhenFoodIsAvailable, foodNames];
 };

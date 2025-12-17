@@ -2,6 +2,8 @@
   "compilerOptions": {
     "module": "es2022",
     "target": "ES2022",
+    "outDir": "./build/",
+    "noEmit": false,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -11,8 +13,6 @@
     "noImplicitAny": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
     "skipLibCheck": true,
     "types": []
   },
