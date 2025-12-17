@@ -1,4 +1,5 @@
 import type { UnicafeRestaurants } from '../types/unicafeTypes';
+import { checkBlacklist } from './blacklistUtils';
 import { fetchMenu } from './fetchUnicafeMenu';
 
 const getRestaurant = () => {
@@ -54,6 +55,9 @@ export const checkIfFoodIsInWeekOfRestaurant = (
     const date = dailyMenu.date;
     dailyMenu.data.forEach((foodItem) => {
       if (foodItem.name.includes(searchedFood)) {
+        if (checkBlacklist(searchedFood, foodItem.name)) {
+          return;
+        }
         datesWhenFoodIsAvailable.push(date);
         foodNames.push(foodItem.name);
       }
@@ -72,7 +76,9 @@ export const checkFoodInAllRestaurants = (
   searchedFood: string,
   response: UnicafeRestaurants
 ) => {
-  const foodAvailability: { [restaurantName: string]: [string, string][] } = {};
+  const foodAvailability: {
+    [restaurantName: string]: [date: string, food: string][];
+  } = {};
 
   const restaurants = getRestaurant();
 
