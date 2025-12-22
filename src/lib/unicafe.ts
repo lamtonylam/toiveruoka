@@ -1,4 +1,5 @@
 import type { UnicafeRestaurants } from '../types/unicafeTypes';
+import { fetchMenu } from './fetchUnicafeMenu';
 import { checkIfDateIsPast } from './unicafe.utils';
 
 const getRestaurant = () => {
@@ -92,3 +93,7 @@ export const checkFoodInAllRestaurants = (
 
   return foodAvailability;
 };
+
+void (async () => {
+  console.log(checkFoodInAllRestaurants('kebab', await fetchMenu()));
+})();

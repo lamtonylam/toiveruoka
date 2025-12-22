@@ -10,7 +10,7 @@ app.use(express.json());
 const PORT = 3000;
 
 // Swagger UI
-// eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+
 app.use(
   '/docs',
   swaggerUi.serve,
@@ -68,8 +68,7 @@ app.get('/', async (req, res) => {
   try {
     const data = checkFoodInAllRestaurants(food, await fetchMenu());
     return res.json(data);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
+  } catch {
     return res.status(500).json({ error: 'Failed to fetch menu' });
   }
 });

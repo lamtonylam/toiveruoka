@@ -4,6 +4,7 @@ import stylistic from '@stylistic/eslint-plugin';
 
 export default tseslint.config({
   files: ['**/*.ts'],
+  ignores: ['build/**'],
   extends: [
     eslint.configs.recommended,
     ...tseslint.configs.recommendedTypeChecked,
@@ -17,7 +18,6 @@ export default tseslint.config({
   plugins: {
     '@stylistic': stylistic,
   },
-  ignores: ['build/*'],
   rules: {
     '@stylistic/semi': 'error',
     '@typescript-eslint/no-unsafe-assignment': 'warn',
