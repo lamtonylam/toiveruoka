@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import { fetchMenu } from './lib/fetchUnicafeMenu';
 import { checkFoodInAllRestaurants } from './lib/unicafe';
@@ -6,6 +7,7 @@ import { swaggerSpec } from './swagger';
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 const PORT = 3000;
 
