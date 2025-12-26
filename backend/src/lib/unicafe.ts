@@ -54,7 +54,7 @@ export const checkIfFoodIsInWeekOfRestaurant = (
   weeklyMenus?.forEach((dailyMenu) => {
     const date = dailyMenu.date;
     dailyMenu.data.forEach((foodItem) => {
-      if (foodItem.name.includes(searchedFood)) {
+      if (foodItem.name.toLowerCase().includes(searchedFood.toLowerCase())) {
         if (checkIfDateIsPast(date)) {
           return;
         }
