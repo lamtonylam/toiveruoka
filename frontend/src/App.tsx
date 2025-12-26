@@ -45,7 +45,7 @@ function App() {
   return (
     <>
       <h1>Unicafe foodfinder</h1>
-      <div>
+      <div className="input-container">
         <input
           type="text"
           value={foodName}
