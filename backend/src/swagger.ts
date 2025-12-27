@@ -10,7 +10,7 @@ const options = {
     },
     servers: [
       {
-        url: 'https://toiveruoka.ynot.fi',
+        url: 'https://unari-backend.ynot.fi',
         description: 'Server URL',
       },
     ],

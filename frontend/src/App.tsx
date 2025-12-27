@@ -69,8 +69,9 @@ function App() {
                 <div>
                   {items.map((item: any[], index: number) => (
                     <div key={index}>
-                      <div>{item[0]}</div>
-                      <div>{item[1]}</div>
+                      <div>- {item[0]}</div>
+                      <div>- {item[1]}</div>
+                      {item[2] && <>- Allergeenit: {item[2]}</>}
                     </div>
                   ))}
                 </div>
