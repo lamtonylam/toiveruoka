@@ -57,7 +57,7 @@ export const checkFoodInAllRestaurants = (
       foodAvailability[restaurantName] = dates.map((date, index) => [
         date,
         foodNames[index],
-        getAllergensFromMenuItem(foodNames[index], response).join(', '),
+        getAllergensFromMenuItem(foodNames[index], response, restaurantName).join(', '),
       ]);
     }
   });

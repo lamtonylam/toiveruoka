@@ -70,18 +70,16 @@ const getRestaurantData = (
 
 export const getAllergensFromMenuItem = (
   foodName: string,
-  unicafeResponse: UnicafeRestaurants
+  unicafeResponse: UnicafeRestaurants,
+  restaurantName: string
 ): string[] => {
-  const restaurants = getRestaurant();
-  const allergens: string[] = [];
+  const restaurantData = getRestaurantData(unicafeResponse, restaurantName);
+  const weeklyMenus = restaurantData?.menuData?.menus;
+  
+  if (!weeklyMenus) {
+    return [];
+  }
 
-  restaurants.forEach((restaurantName) => {
-    const restaurantData = getRestaurantData(unicafeResponse, restaurantName);
-    const weeklyMenus = restaurantData?.menuData?.menus;
-    if (weeklyMenus) {
-      allergens.push(...extractAllergensFromWeeklyMenus(weeklyMenus, foodName));
-    }
-  });
-
+  const allergens = extractAllergensFromWeeklyMenus(weeklyMenus, foodName);
   return Array.from(new Set(allergens));
 };
