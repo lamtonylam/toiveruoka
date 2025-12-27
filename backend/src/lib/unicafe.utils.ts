@@ -1,5 +1,4 @@
 import { UnicafeRestaurants, MenuDay, MenuItem } from '../types/unicafeTypes';
-import { getRestaurant } from './restaurants';
 
 export const checkIfDateIsPast = (dateString: string): boolean => {
   const today = new Date();
