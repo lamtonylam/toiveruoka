@@ -31,9 +31,9 @@ export interface Nutrition {
 }
 
 export interface MenuMeta {
-  dietaryLabels?: string[]; // Dietary labels (e.g., "G", "KELA", "Veg")
-  allergens?: string[]; // Allergens/Ingredients (e.g., "soijapavut")
-  otherInfo?: string[]; // Other info (e.g., "Ilmastovalinta")
+  0?: string[]; // Dietary labels (e.g., "G", "KELA", "Veg")
+  1?: string[]; // Allergens/Ingredients (e.g., "soijapavut")
+  2?: string[]; // Other info (e.g., "Ilmastovalinta")
 }
 
 export interface MenuItem {

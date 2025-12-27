@@ -52,7 +52,7 @@ export const getAllergensFromMenuItem = (
     weeklyMenus?.forEach((dailyMenu) => {
       dailyMenu.data.forEach((foodItem) => {
         if (foodItem.name.toLowerCase() === foodName.toLowerCase()) {
-          const itemAllergens = foodItem.meta.allergens;
+          const itemAllergens = foodItem.meta[1];
           if (itemAllergens) {
             itemAllergens.forEach((allergen) => {
               if (!allergens.includes(allergen)) {
