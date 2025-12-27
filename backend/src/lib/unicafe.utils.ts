@@ -83,5 +83,5 @@ export const getAllergensFromMenuItem = (
     }
   });
 
-  return allergens;
+  return Array.from(new Set(allergens));
 };
