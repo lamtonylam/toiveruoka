@@ -1,3 +1,6 @@
+import { UnicafeRestaurants } from '../types/unicafeTypes';
+import { getRestaurant } from './restaurants';
+
 export const checkIfDateIsPast = (dateString: string): boolean => {
   const today = new Date();
 
@@ -29,4 +32,38 @@ export const checkIfDateIsPast = (dateString: string): boolean => {
   );
 
   return dateToCheck < startOfToday;
+};
+
+export const getAllergensFromMenuItem = (
+  foodName: string,
+  unicafeResponse: UnicafeRestaurants
+): string[] => {
+  const restaurants = getRestaurant();
+
+  const allergens: string[] = [];
+
+  restaurants.forEach((restaurantName) => {
+    const restaurantData = unicafeResponse.find(
+      (restaurant) => restaurant.title === restaurantName
+    );
+
+    const weeklyMenus = restaurantData?.menuData?.menus;
+
+    weeklyMenus?.forEach((dailyMenu) => {
+      dailyMenu.data.forEach((foodItem) => {
+        if (foodItem.name.toLowerCase() === foodName.toLowerCase()) {
+          const itemAllergens = foodItem.meta.allergens;
+          if (itemAllergens) {
+            itemAllergens.forEach((allergen) => {
+              if (!allergens.includes(allergen)) {
+                allergens.push(allergen);
+              }
+            });
+          }
+        }
+      });
+    });
+  });
+
+  return allergens;
 };

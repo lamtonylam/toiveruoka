@@ -1,41 +1,7 @@
 import type { UnicafeRestaurants } from '../types/unicafeTypes';
 import { fetchMenu } from './fetchUnicafeMenu';
-import { checkIfDateIsPast } from './unicafe.utils';
-
-const getRestaurant = () => {
-  const viikkiRestaurants = [
-    'Tähkä',
-    'Infokeskus alakerta',
-    'Viikuna',
-    'Infokeskus',
-    'Biokeskus',
-  ];
-  const keskustaRestaurants = [
-    'Myöhä Café & Bar',
-    'Kaivopiha',
-    'Kaisa-talo',
-    'Soc&Kom',
-    'Rotunda',
-    'Porthania',
-    'Topelias',
-    'Olivia',
-    'Metsätalo',
-    'Cafe Portaali',
-  ];
-
-  const kumpulaRestaurants = ['Physicum', 'Exactum', 'Chemicum'];
-
-  const meilahtiRestaurants = ['Meilahti'];
-
-  const restaurants = [
-    ...viikkiRestaurants,
-    ...keskustaRestaurants,
-    ...kumpulaRestaurants,
-    ...meilahtiRestaurants,
-  ];
-
-  return restaurants;
-};
+import { checkIfDateIsPast, getAllergensFromMenuItem } from './unicafe.utils';
+import { getRestaurant } from './restaurants';
 
 export const checkIfFoodIsInWeekOfRestaurant = (
   searchedFood: string,
@@ -72,7 +38,11 @@ export const checkFoodInAllRestaurants = (
   response: UnicafeRestaurants
 ) => {
   const foodAvailability: {
-    [restaurantName: string]: [dateString: string, food: string][];
+    [restaurantName: string]: [
+      dateString: string,
+      food: string,
+      allergens: string
+    ][];
   } = {};
 
   const restaurants = getRestaurant();
@@ -87,6 +57,7 @@ export const checkFoodInAllRestaurants = (
       foodAvailability[restaurantName] = dates.map((date, index) => [
         date,
         foodNames[index],
+        getAllergensFromMenuItem(foodNames[index], response).join(', '),
       ]);
     }
   });
