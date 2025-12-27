@@ -9,7 +9,8 @@
     "run:unicafe": "tsx src/lib/unicafeUtils.ts",
     "run": "tsx",
     "lint": "eslint . --ext .ts && npx dpdm src/*",
-    "start": "tsx src/index.ts"
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts"
   },
   "author": "",
   "license": "ISC",
