@@ -1,4 +1,4 @@
-import { UnicafeRestaurants } from '../types/unicafeTypes';
+import { UnicafeRestaurants, MenuDay, MenuItem } from '../types/unicafeTypes';
 import { getRestaurant } from './restaurants';
 
 export const checkIfDateIsPast = (dateString: string): boolean => {
@@ -34,35 +34,53 @@ export const checkIfDateIsPast = (dateString: string): boolean => {
   return dateToCheck < startOfToday;
 };
 
+export const getAllergensFromFoodItem = (foodItem: MenuItem): string[] => {
+  const itemAllergens: string[] | undefined = foodItem.meta?.[1];
+
+  if (Array.isArray(itemAllergens)) {
+    return Array.from(new Set(itemAllergens));
+  }
+
+  return [];
+};
+
+const extractAllergensFromWeeklyMenus = (
+  weeklyMenus: MenuDay[],
+  foodName: string
+): string[] => {
+  const allergens: string[] = [];
+  weeklyMenus.forEach((dailyMenu) => {
+    dailyMenu.data.forEach((foodItem: MenuItem) => {
+      if (foodItem.name.toLowerCase() === foodName.toLowerCase()) {
+        allergens.push(...getAllergensFromFoodItem(foodItem));
+      }
+    });
+  });
+  return allergens;
+};
+
+const getRestaurantData = (
+  unicafeResponse: UnicafeRestaurants,
+  restaurantName: string
+) => {
+  return unicafeResponse.find(
+    (restaurant) => restaurant.title === restaurantName
+  );
+};
+
 export const getAllergensFromMenuItem = (
   foodName: string,
   unicafeResponse: UnicafeRestaurants
 ): string[] => {
   const restaurants = getRestaurant();
-
   const allergens: string[] = [];
 
   restaurants.forEach((restaurantName) => {
-    const restaurantData = unicafeResponse.find(
-      (restaurant) => restaurant.title === restaurantName
-    );
-
+    const restaurantData = getRestaurantData(unicafeResponse, restaurantName);
     const weeklyMenus = restaurantData?.menuData?.menus;
-
-    weeklyMenus?.forEach((dailyMenu) => {
-      dailyMenu.data.forEach((foodItem) => {
-        if (foodItem.name.toLowerCase() === foodName.toLowerCase()) {
-          const itemAllergens = foodItem.meta[1];
-          if (itemAllergens) {
-            itemAllergens.forEach((allergen) => {
-              if (!allergens.includes(allergen)) {
-                allergens.push(allergen);
-              }
-            });
-          }
-        }
-      });
-    });
+    if (weeklyMenus) {
+      allergens.push(...extractAllergensFromWeeklyMenus(weeklyMenus, foodName));
+    }
   });
 
   return allergens;
