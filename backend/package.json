@@ -10,7 +10,8 @@
     "run": "tsx",
     "lint": "eslint . --ext .ts && npx dpdm src/*",
     "start": "tsx src/index.ts",
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch src/index.ts",
+    "test:qa": "jest --coverage --watchAll=false && eslint . --ext .ts && npx dpdm src/*"
   },
   "author": "",
   "license": "ISC",
