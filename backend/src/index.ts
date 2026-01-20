@@ -4,10 +4,13 @@ import swaggerUi from 'swagger-ui-express';
 import { fetchMenu } from './lib/fetchUnicafeMenu';
 import { checkFoodInAllRestaurants } from './lib/unicafe';
 import { swaggerSpec } from './swagger';
+import morgan from 'morgan';
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+app.use(morgan(':method :url :status :response-time ms'));
 
 const PORT = 3000;
 
