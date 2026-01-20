@@ -9,9 +9,6 @@ on:
 jobs:
   smoke-test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,7 +19,7 @@ jobs:
       - name: Build local image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./backend
           load: true
           tags: local-smoke-test:latest
 
