@@ -1,5 +1,4 @@
 import type { UnicafeRestaurants } from '../types/unicafeTypes';
-import { fetchMenu } from './fetchUnicafeMenu';
 import { checkIfDateIsPast, getAllergensFromMenuItem } from './unicafe.utils';
 import { getRestaurant } from './restaurants';
 
@@ -41,7 +40,7 @@ export const checkFoodInAllRestaurants = (
     [restaurantName: string]: [
       dateString: string,
       food: string,
-      allergens: string
+      allergens: string,
     ][];
   } = {};
 
@@ -57,14 +56,14 @@ export const checkFoodInAllRestaurants = (
       foodAvailability[restaurantName] = dates.map((date, index) => [
         date,
         foodNames[index],
-        getAllergensFromMenuItem(foodNames[index], response, restaurantName).join(', '),
+        getAllergensFromMenuItem(
+          foodNames[index],
+          response,
+          restaurantName
+        ).join(', '),
       ]);
     }
   });
 
   return foodAvailability;
 };
-
-void (async () => {
-  console.log(checkFoodInAllRestaurants('kebab', await fetchMenu()));
-})();
