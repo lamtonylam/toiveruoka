@@ -1,0 +1,30 @@
+name: Docker Smoke Test
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build local image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          load: true
+          tags: local-smoke-test:latest
+
+      - name: Run Smoke Test
+        run: |
+          docker run -d --name test-container -p 3000:3000 local-smoke-test:latest
+          sleep 5
+          curl --fail http://localhost:3000/?food=makkara || exit 1
