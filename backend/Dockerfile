@@ -1,5 +1,5 @@
 # Build stage
-FROM node:20-alpine AS builder
+FROM oven/bun:latest AS builder
 
 WORKDIR /app
 
@@ -7,21 +7,21 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN bun install
 
 # Copy source code
 COPY . .
 
 # Runtime stage
-FROM node:20-alpine
+FROM oven/bun:latest
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install only production dependencies (if any) and tsx for running TypeScript
-RUN npm ci --omit=dev && npm install tsx
+# Install only production dependencies
+RUN bun install --production
 
 # Copy source code from builder
 COPY --from=builder /app/src ./src
@@ -30,4 +30,4 @@ COPY --from=builder /app/tsconfig.json ./
 EXPOSE 3000
 
 # Run the server
-CMD ["npx", "tsx", "src/index.ts"]
+CMD ["bun", "run", "src/index.ts"]
