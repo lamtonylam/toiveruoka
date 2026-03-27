@@ -4,14 +4,6 @@
     "config:recommended"
   ],
   "schedule": "* 4 * * *",
-  "packageRules": [
-    {
-      "enabled": false,
-      "matchPackageNames": [
-        "*"
-      ]
-    }
-  ],
   "vulnerabilityAlerts": {
     "enabled": true
   }
