@@ -1,23 +1,14 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ],
-  "schedule": "* 4 * * *",
-  "vulnerabilityAlerts": {
-    "enabled": true
-  },
-  "osvVulnerabilityAlerts": true,
+  "extends": ["config:recommended"],
+  "schedule": ["* 4 * * *"],
   "packageRules": [
     {
-      "description": "Disable all regular package updates",
-      "matchPackagePatterns": ["*"],
+      "matchPackageNames": ["*"],
       "enabled": false
-    },
-    {
-      "description": "Re-enable updates only for known vulnerabilities",
-      "matchVulnerabilityAlerts": true,
-      "enabled": true
     }
-  ]
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  }
 }
