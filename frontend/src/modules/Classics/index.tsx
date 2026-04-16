@@ -37,18 +37,21 @@ function Classics() {
 
   useEffect(() => {
     const fetchAllFood = async () => {
-      for (const food of certifiedClassics) {
+      const promises = certifiedClassics.map(async (food) => {
         const data = await fetchFood(food)
+        return { food, data }
+      })
+      const results = await Promise.all(promises)
+      const newAvailability: ClassicFoodAvailability = {}
+      results.forEach(({ food, data }) => {
         if (data) {
-          setAvailability((prev) => ({
-            ...prev,
-            [food]: Object.entries(data).map(([restaurant, items]) => ({
-              restaurant,
-              date: items[0]?.[0] ?? null,
-            })),
+          newAvailability[food] = Object.entries(data).map(([restaurant, items]) => ({
+            restaurant,
+            date: items[0]?.[0] ?? null,
           }))
         }
-      }
+      })
+      setAvailability(newAvailability)
     }
     fetchAllFood()
   }, [])
