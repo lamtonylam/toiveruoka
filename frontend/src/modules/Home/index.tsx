@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 function Home() {
@@ -10,6 +10,8 @@ function Home() {
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'
 
+  const abortControllerRef = useRef<AbortController | null>(null)
+
   const fetchFood = async (name: string) => {
     if (name.length === 0) {
       setResponseData(null)
@@ -17,18 +19,29 @@ function Home() {
       return
     }
 
+    // Abort any ongoing request
+    abortControllerRef.current?.abort()
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
     setLoading(true)
     setError(null)
     setResponseData(null)
 
     try {
-      const response = await fetch(`${backendUrl}/?food=${encodeURIComponent(name)}`)
+      const response = await fetch(`${backendUrl}/?food=${encodeURIComponent(name)}`, {
+        signal: controller.signal,
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       const data = await response.json()
       setResponseData(data)
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        // Request was aborted, do nothing
+        return
+      }
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
@@ -40,7 +53,11 @@ function Home() {
       fetchFood(foodName)
     }, 400)
 
-    return () => clearTimeout(timer)
+    return () => {
+      clearTimeout(timer)
+      abortControllerRef.current?.abort()
+      abortControllerRef.current = null
+    }
   }, [foodName])
 
   return (
