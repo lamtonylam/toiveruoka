@@ -66,7 +66,7 @@ function Classics() {
 
       {certifiedClassics.map((food) => (
         <div key={food}>
-          {availability[food]?.length > 0 ? <h2>{food}</h2> : null}
+          {availability[food]?.length ? <h2>{food}</h2> : null}
           {availability[food]?.length ? (
             <ul>
               {availability[food].map(({ restaurant, date }) => (
