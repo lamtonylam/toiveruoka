@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 function Home() {
@@ -12,7 +12,7 @@ function Home() {
 
   const abortControllerRef = useRef<AbortController | null>(null)
 
-  const fetchFood = async (name: string) => {
+  const fetchFood = useCallback(async (name: string) => {
     if (name.length === 0) {
       setResponseData(null)
       setError(null)
@@ -46,7 +46,7 @@ function Home() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [backendUrl]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
