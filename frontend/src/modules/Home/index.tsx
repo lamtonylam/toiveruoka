@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAllergens } from '../../utils/useAllergens'
 
 function Home() {
   const navigate = useNavigate()
@@ -7,6 +8,7 @@ function Home() {
   const [responseData, setResponseData] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showAllergens, setShowAllergens] = useAllergens()
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'
 
@@ -76,6 +78,17 @@ function Home() {
         />
       </div>
 
+      {responseData && (
+        <label style={{ display: 'block', marginBottom: '20px' }}>
+          <input
+            type="checkbox"
+            checked={showAllergens}
+            onChange={(e) => setShowAllergens(e.target.checked)}
+          />
+          Näytä allergeenit
+        </label>
+      )}
+
       {loading && <div style={{ marginTop: '20px' }}>Loading...</div>}
 
       {error && <div style={{ color: 'red', marginTop: '20px' }}>Error: {error}</div>}
@@ -93,7 +106,7 @@ function Home() {
                     <div key={index}>
                       <div>- {item[0]}</div>
                       <div>- {item[1]}</div>
-                      {item[2] && <>- Allergeenit: {item[2]}</>}
+                      {showAllergens && item[2] && <>- Allergeenit: {item[2]}</>}
                     </div>
                   ))}
                 </div>
