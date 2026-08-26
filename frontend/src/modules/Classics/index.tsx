@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-
-const certifiedClassics = ['Kalapuikot', 'Meksikolainen uunimakkara', 'Rapeat kalapalat']
+import certifiedClassics from './certifiedClassics.json'
 
 type ClassicFoodAvailability = {
   [food: string]: {
@@ -27,7 +26,7 @@ function Classics() {
       const response = await fetch(`${backendUrl}/?food=${encodeURIComponent(name)}`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
-      }
+      } 
       const data = await response.json()
       return data
     } catch (err) {
