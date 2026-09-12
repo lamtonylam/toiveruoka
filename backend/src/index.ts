@@ -5,11 +5,14 @@ import { fetchMenu } from './lib/fetchUnicafeMenu';
 import { checkFoodInAllRestaurants } from './lib/unicafe';
 import { swaggerSpec } from './swagger';
 import morganMiddleware from './middleware/logger';
+import rateLimiter from './middleware/rateLimiter';
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(express.json());
 app.use(cors());
 app.use(morganMiddleware);
+app.use(rateLimiter);
 
 const PORT = 3000;
 
@@ -55,6 +58,16 @@ app.use(
  *           text/plain:
  *             schema:
  *               type: string
+ *       429:
+ *         description: Too many requests, rate limit exceeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Too many requests, please try again later.
  *       500:
  *         description: Failed to fetch menu
  *         content:
