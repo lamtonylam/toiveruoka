@@ -1,4 +1,4 @@
-import { Bot, Context } from 'grammy';
+import { Bot, Context, GrammyError } from 'grammy';
 import { Menu } from '@grammyjs/menu';
 import {
   getUserFoods,
@@ -478,3 +478,91 @@ export async function performAllTimeCheck(
     await ctx.reply('Menujen haku backend-rajapinnasta epäonnistui. Yritä hetken kuluttua uudelleen.');
   }
 }
+
+// -----------------------------------------------------------------------------
+// 5. Bot Runner with Auto-Restart on 409 Conflict
+// -----------------------------------------------------------------------------
+export interface BotRunnerOptions {
+  initialRetryDelayMs?: number;
+  maxRetryDelayMs?: number;
+  backoffFactor?: number;
+  signal?: AbortSignal;
+  onConflict?: (err: unknown, delayMs: number) => void;
+}
+
+/**
+ * Starts the bot with automatic polling restarts if a 409 Conflict error occurs.
+ * Telegram throws 409 Conflict when another getUpdates connection is opened with the same token
+ * (for example, if the same bot token is run locally while production is also running).
+ */
+export async function startBotWithRetry(
+  bot: Bot,
+  options?: BotRunnerOptions
+): Promise<void> {
+  const initialDelay = options?.initialRetryDelayMs ?? 5000;
+  const maxDelay = options?.maxRetryDelayMs ?? 30000;
+  const backoffFactor = options?.backoffFactor ?? 1.5;
+  const signal = options?.signal;
+
+  let currentDelay = initialDelay;
+
+  while (!signal?.aborted) {
+    try {
+      console.log('Bot is running and listening for Telegram updates...');
+      await bot.start({
+        onStart: () => {
+          // Reset retry delay once polling has successfully started
+          currentDelay = initialDelay;
+        },
+      });
+      // Normal exit when bot.stop() is called
+      break;
+    } catch (err: any) {
+      if (signal?.aborted) break;
+
+      const isConflict =
+        (err instanceof GrammyError && err.error_code === 409) ||
+        err?.error_code === 409 ||
+        (typeof err?.description === 'string' && err.description.includes('Conflict')) ||
+        (typeof err?.message === 'string' && err.message.includes('409'));
+
+      if (isConflict) {
+        if (options?.onConflict) {
+          options.onConflict(err, currentDelay);
+        } else {
+          console.warn(
+            '\n[Bot] Conflict (409): getUpdates terminated by another instance running with the same token.'
+          );
+          console.warn(
+            '[Bot] Note: Telegram only allows ONE running bot instance per token.'
+          );
+          console.warn(
+            `[Bot] Restarting bot in ${(currentDelay / 1000).toFixed(1)}s... (Ensure local dev or duplicate instances are stopped)\n`
+          );
+        }
+
+        // Wait with abort signal support
+        await new Promise<void>((resolve) => {
+          if (signal?.aborted) return resolve();
+          const timer = setTimeout(() => {
+            signal?.removeEventListener('abort', onAbort);
+            resolve();
+          }, currentDelay);
+          const onAbort = () => {
+            clearTimeout(timer);
+            signal?.removeEventListener('abort', onAbort);
+            resolve();
+          };
+          signal?.addEventListener('abort', onAbort);
+        });
+
+        currentDelay = Math.min(Math.round(currentDelay * backoffFactor), maxDelay);
+        continue;
+      }
+
+      // Rethrow any non-conflict error (e.g. 401 Unauthorized or uncaught exception)
+      throw err;
+    }
+  }
+}
+

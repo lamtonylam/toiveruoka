@@ -5,8 +5,9 @@ import {
   BOT_COMMANDS_EN,
   setupBotCommands,
   replySplitMessage,
+  startBotWithRetry,
 } from './bot';
-import { Bot, Context } from 'grammy';
+import { Bot, Context, GrammyError } from 'grammy';
 
 describe('Bot Commands Configuration', () => {
   const telegramCommandRegex = /^[a-z0-9_]{1,32}$/;
@@ -177,6 +178,97 @@ describe('Alert Preferences & Subscriber Filtering', () => {
     expect(subscribers[0].restaurants).toEqual(['Chemicum']);
   });
 });
+
+describe('startBotWithRetry', () => {
+  it('resolves cleanly when bot.start() completes', async () => {
+    const startMock = jest.fn<any>().mockResolvedValue(undefined);
+    const fakeBot = { start: startMock } as unknown as Bot;
+
+    await startBotWithRetry(fakeBot);
+    expect(startMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('retries on 409 Conflict GrammyError and succeeds on subsequent attempt', async () => {
+    const conflictError = new GrammyError(
+      "Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request)",
+      {
+        ok: false,
+        error_code: 409,
+        description: 'Conflict: terminated by other getUpdates request; make sure that only one bot instance is running',
+      },
+      'getUpdates',
+      {}
+    );
+
+    let calls = 0;
+    const startMock = jest.fn<any>().mockImplementation(async () => {
+      calls++;
+      if (calls === 1) {
+        throw conflictError;
+      }
+      return undefined;
+    });
+
+    const fakeBot = { start: startMock } as unknown as Bot;
+    const onConflictMock = jest.fn();
+
+    await startBotWithRetry(fakeBot, {
+      initialRetryDelayMs: 10,
+      maxRetryDelayMs: 20,
+      onConflict: onConflictMock,
+    });
+
+    expect(calls).toBe(2);
+    expect(onConflictMock).toHaveBeenCalledTimes(1);
+    expect(onConflictMock).toHaveBeenCalledWith(conflictError, 10);
+  });
+
+  it('rethrows non-409 errors immediately', async () => {
+    const authError = new GrammyError(
+      "Call to 'getMe' failed! (401: Unauthorized)",
+      { ok: false, error_code: 401, description: 'Unauthorized' },
+      'getMe',
+      {}
+    );
+
+    const startMock = jest.fn<any>().mockRejectedValue(authError);
+    const fakeBot = { start: startMock } as unknown as Bot;
+
+    await expect(startBotWithRetry(fakeBot)).rejects.toThrow('401');
+    expect(startMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('exits when abort signal is triggered during retry delay', async () => {
+    const conflictError = new GrammyError(
+      'Conflict',
+      { ok: false, error_code: 409, description: 'Conflict' },
+      'getUpdates',
+      {}
+    );
+
+    const controller = new AbortController();
+    let calls = 0;
+    const startMock = jest.fn<any>().mockImplementation(async () => {
+      calls++;
+      throw conflictError;
+    });
+
+    const fakeBot = { start: startMock } as unknown as Bot;
+
+    const retryPromise = startBotWithRetry(fakeBot, {
+      initialRetryDelayMs: 100,
+      signal: controller.signal,
+      onConflict: () => {
+        // Abort right after conflict is handled
+        controller.abort();
+      },
+    });
+
+    await retryPromise;
+    expect(calls).toBe(1);
+  });
+});
+
 
 
 

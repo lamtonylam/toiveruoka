@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { prisma } from './db';
-import { createBot, setupBotCommands } from './bot';
+import { createBot, setupBotCommands, startBotWithRetry } from './bot';
 import { startCronJob } from './cron';
 
 dotenv.config();
@@ -33,18 +33,32 @@ async function main() {
   // 4. Register command picker and menu button in Telegram
   await setupBotCommands(bot);
 
-  // Handle graceful shutdown
+  // 5. Handle graceful shutdown
+  const shutdownController = new AbortController();
+  let isShuttingDown = false;
+
   const stopBot = async () => {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
     console.log('\nShutting down gracefully...');
-    bot.stop();
+    shutdownController.abort();
+    try {
+      await bot.stop();
+    } catch {
+      // Ignore if bot was not actively polling
+    }
     await prisma.$disconnect();
     process.exit(0);
   };
   process.once('SIGINT', stopBot);
   process.once('SIGTERM', stopBot);
 
-  console.log('Bot is running and listening for Telegram updates...');
-  await bot.start();
+  // 6. Start bot with auto-restart on 409 Conflict
+  await startBotWithRetry(bot, { signal: shutdownController.signal });
 }
 
-main().catch(console.error);
+main().catch((err) => {
+  console.error('Fatal error during bot execution:', err);
+  process.exit(1);
+});
+
