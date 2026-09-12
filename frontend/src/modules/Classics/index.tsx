@@ -18,6 +18,7 @@ type FoodResponse = {
 function Classics() {
   const navigate = useNavigate()
   const [availability, setAvailability] = useState<ClassicFoodAvailability>({})
+  const [loading, setLoading] = useState(true)
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'
 
@@ -26,7 +27,7 @@ function Classics() {
       const response = await fetch(`${backendUrl}/?food=${encodeURIComponent(name)}`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
-      } 
+      }
       const data = await response.json()
       return data
     } catch (err) {
@@ -36,24 +37,31 @@ function Classics() {
 
   useEffect(() => {
     const fetchAllFood = async () => {
-      const promises = certifiedClassics.map(async (food) => {
-        const data = await fetchFood(food)
-        return { food, data }
-      })
-      const results = await Promise.all(promises)
-      const newAvailability: ClassicFoodAvailability = {}
-      results.forEach(({ food, data }) => {
-        if (data) {
-          newAvailability[food] = Object.entries(data).map(([restaurant, items]) => ({
-            restaurant,
-            date: items[0]?.[0] ?? null,
-          }))
-        }
-      })
-      setAvailability(newAvailability)
+      setLoading(true)
+      try {
+        const promises = certifiedClassics.map(async (food) => {
+          const data = await fetchFood(food)
+          return { food, data }
+        })
+        const results = await Promise.all(promises)
+        const newAvailability: ClassicFoodAvailability = {}
+        results.forEach(({ food, data }) => {
+          if (data) {
+            newAvailability[food] = Object.entries(data).map(([restaurant, items]) => ({
+              restaurant,
+              date: items[0]?.[0] ?? null,
+            }))
+          }
+        })
+        setAvailability(newAvailability)
+      } finally {
+        setLoading(false)
+      }
     }
     fetchAllFood()
   }, [])
+
+  const hasClassics = certifiedClassics.some((food) => (availability[food]?.length ?? 0) > 0)
 
   return (
     <>
@@ -63,20 +71,25 @@ function Classics() {
       </header>
       <h1>Certified classics</h1>
 
-      {certifiedClassics.map((food) => (
-        <div key={food}>
-          {availability[food]?.length ? <h2>{food}</h2> : null}
-          {availability[food]?.length ? (
-            <ul>
-              {availability[food].map(({ restaurant, date }) => (
-                <li key={restaurant}>
-                  {restaurant}: {date}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-      ))}
+      {loading && <div style={{ marginTop: '20px' }}>Loading...</div>}
+
+      {!loading && !hasClassics && <p>No classics were found</p>}
+
+      {!loading &&
+        certifiedClassics.map((food) => (
+          <div key={food}>
+            {availability[food]?.length ? <h2>{food}</h2> : null}
+            {availability[food]?.length ? (
+              <ul>
+                {availability[food].map(({ restaurant, date }) => (
+                  <li key={restaurant}>
+                    {restaurant}: {date}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ))}
     </>
   )
 }
