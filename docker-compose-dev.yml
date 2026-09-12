@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: bun run src/index.ts --watch
+    command: sh -c "npm install && npm run dev"
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -31,3 +29,55 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+
+  bot:
+    build:
+      context: ./telegram-bot
+      dockerfile: Dockerfile
+    command: npm run dev
+    volumes:
+      - ./telegram-bot:/app
+      - /app/node_modules
+    env_file:
+      - ./telegram-bot/.env
+    environment:
+      - NODE_ENV=development
+      - BACKEND_URL=http://backend:3000
+    depends_on:
+      backend:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: toiveruoka
+      POSTGRES_PASSWORD: toiveruoka_password
+      POSTGRES_DB: toiveruoka
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U toiveruoka -d toiveruoka"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pgweb:
+    image: sosedoff/pgweb:latest
+    restart: unless-stopped
+    command: ["pgweb", "--bind=0.0.0.0", "--listen=8081"]
+    ports:
+      - "8081:8081"
+    environment:
+      - PGWEB_DATABASE_URL=postgres://toiveruoka:toiveruoka_password@postgres:5432/toiveruoka?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

@@ -1,0 +1,34 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model FoodSubscription {
+  chatId   BigInt  @map("chat_id")
+  foodName String  @map("food_name")
+  enabled  Boolean @default(true)
+
+  @@id([chatId, foodName])
+  @@map("food_subscriptions")
+}
+
+model RestaurantSubscription {
+  chatId         BigInt  @map("chat_id")
+  restaurantName String  @map("restaurant_name")
+  enabled        Boolean @default(true)
+
+  @@id([chatId, restaurantName])
+  @@map("restaurant_subscriptions")
+}
+
+model UserPreference {
+  chatId        BigInt  @id @map("chat_id")
+  alertsEnabled Boolean @default(true) @map("alerts_enabled")
+
+  @@map("user_preferences")
+}
+
