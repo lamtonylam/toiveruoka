@@ -2,8 +2,8 @@
 Finds where and when your favorite food is available at Unicafe restaurants.
 
 ### Live docs
-- API: https://unaribackend.ynot.fi/
-- Production: https://unaribackend.ynot.fi/docs
+- API: https://unari-backend.ynot.fi
+- Production: https://unari-backend.ynot.fi/docs
 
 ### Quick start (local)
 1) Prerequisite: Node.js 18+ (for built-in `fetch`).
