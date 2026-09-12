@@ -6,6 +6,8 @@ import {
   setupBotCommands,
   replySplitMessage,
   startBotWithRetry,
+  getCheckboxIcon,
+  getAlertsMenuLabel,
 } from './bot';
 import { Bot, Context, GrammyError } from 'grammy';
 
@@ -63,6 +65,18 @@ describe('Bot Commands Configuration', () => {
     expect(setMyCommandsMock).toHaveBeenCalledWith(BOT_COMMANDS_FI, { language_code: 'fi' });
     expect(setMyCommandsMock).toHaveBeenCalledWith(BOT_COMMANDS_EN, { language_code: 'en' });
     expect(setChatMenuButtonMock).toHaveBeenCalledWith({ menu_button: { type: 'commands' } });
+  });
+});
+
+describe('Checkbox Emojis', () => {
+  it('returns checked emoji for enabled state and empty square emoji for disabled state', () => {
+    expect(getCheckboxIcon(true)).toBe('✅');
+    expect(getCheckboxIcon(false)).toBe('⬜');
+  });
+
+  it('formats alert preference menu label with checkbox emojis', () => {
+    expect(getAlertsMenuLabel(true)).toBe('Aamuilmoitukset (klo 10): Päällä ✅');
+    expect(getAlertsMenuLabel(false)).toBe('Aamuilmoitukset (klo 10): Pois ⬜');
   });
 });
 

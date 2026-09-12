@@ -23,6 +23,17 @@ import {
 } from './unicafe';
 
 // -----------------------------------------------------------------------------
+// Checkbox Emojis & Helpers
+// -----------------------------------------------------------------------------
+export function getCheckboxIcon(enabled: boolean): string {
+  return enabled ? '✅' : '⬜';
+}
+
+export function getAlertsMenuLabel(enabled: boolean): string {
+  return `Aamuilmoitukset (klo 10): ${enabled ? 'Päällä ✅' : 'Pois ⬜'}`;
+}
+
+// -----------------------------------------------------------------------------
 // 1. Foods Checkbox Menu
 // -----------------------------------------------------------------------------
 export const foodsMenu = new Menu('foods-menu')
@@ -32,7 +43,7 @@ export const foodsMenu = new Menu('foods-menu')
 
     const foods = await getUserFoods(chatId);
     for (const food of foods) {
-      const icon = food.enabled ? '[x]' : '[ ]';
+      const icon = getCheckboxIcon(food.enabled);
       range
         .text(`${icon} ${food.name}`, async (c) => {
           const newState = await toggleFood(chatId, food.name);
@@ -75,7 +86,7 @@ for (const campus of CAMPUSES) {
 
       for (const restaurant of campus.restaurants) {
         const isEnabled = enabledSet.has(restaurant.toLowerCase());
-        const icon = isEnabled ? '[x]' : '[ ]';
+        const icon = getCheckboxIcon(isEnabled);
 
         range
           .text(`${icon} ${restaurant}`, async (c) => {
@@ -141,9 +152,7 @@ export const mainMenu = new Menu('main-menu')
     if (!chatId) return;
 
     const alertsEnabled = await getUserAlertPreference(chatId);
-    const label = alertsEnabled
-      ? 'Aamuilmoitukset (klo 10): Päällä [x]'
-      : 'Aamuilmoitukset (klo 10): Pois [ ]';
+    const label = getAlertsMenuLabel(alertsEnabled);
 
     range.text(label, async (c) => {
       const newState = await toggleUserAlertPreference(chatId);
