@@ -1,5 +1,5 @@
-# Build stage
-FROM node:24-alpine AS build
+# Development stage
+FROM node:24-alpine AS dev
 
 WORKDIR /app
 
@@ -12,11 +12,16 @@ RUN npm ci
 # Copy source files
 COPY . .
 
+EXPOSE 5173
+
+# Build stage
+FROM dev AS build
+
 # Build the application
 RUN npm run build
 
 # Production stage
-FROM node:24-alpine
+FROM node:24-alpine AS production
 
 WORKDIR /app
 
