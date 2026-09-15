@@ -55,7 +55,7 @@ export const foodsMenu = new Menu('foods-menu')
         .row();
     }
   })
-  .text('+ Lisää oma ruoka / Add food', async (ctx) => {
+  .text('+ Lisää oma ruoka', async (ctx) => {
     await ctx.reply(
       'Kirjoita komento:\n<code>/addfood &lt;ruoan nimi&gt;</code>\n\n' +
       '<i>Esimerkki:</i> <code>/addfood Lohikeitto</code>\n' +
@@ -64,7 +64,7 @@ export const foodsMenu = new Menu('foods-menu')
     );
   })
   .row()
-  .back('« Takaisin päävalikkoon / Back');
+  .back('« Takaisin päävalikkoon');
 
 // -----------------------------------------------------------------------------
 // 2. Restaurants Campus Menus
@@ -122,24 +122,24 @@ for (const campus of CAMPUSES) {
   restaurantsMenu.submenu(campus.name, menuId).row();
 }
 
-restaurantsMenu.back('« Takaisin päävalikkoon / Back');
+restaurantsMenu.back('« Takaisin päävalikkoon');
 restaurantsMenu.register(campusMenus);
 
 // -----------------------------------------------------------------------------
 // 3. Main Dashboard Menu
 // -----------------------------------------------------------------------------
 export const mainMenu = new Menu('main-menu')
-  .submenu('Lemppariruoat / Foods', 'foods-menu')
-  .submenu('Ravintolat / Restaurants', 'restaurants-menu')
+  .submenu('Lemppariruoat', 'foods-menu')
+  .submenu('Ravintolat', 'restaurants-menu')
   .row()
-  .text('Tänään / Today', async (ctx) => {
+  .text('Tänään', async (ctx) => {
     const chatId = ctx.chat?.id;
     if (!chatId) return;
 
     await ctx.answerCallbackQuery('Kysytään backendiltä...');
     await performLunchCheck(ctx, chatId);
   })
-  .text('Kaikki ajat / All Time', async (ctx) => {
+  .text('Kaikki ajat', async (ctx) => {
     const chatId = ctx.chat?.id;
     if (!chatId) return;
 
@@ -163,7 +163,7 @@ export const mainMenu = new Menu('main-menu')
     });
   })
   .row()
-  .text('Omat valinnat / My Choices', async (ctx) => {
+  .text('Omat valinnat', async (ctx) => {
     const chatId = ctx.chat?.id;
     if (!chatId) return;
 
@@ -191,15 +191,15 @@ mainMenu.register(restaurantsMenu);
 // 4. Bot Factory & Commands
 // -----------------------------------------------------------------------------
 export const BOT_COMMANDS = [
-  { command: 'start', description: 'Päävalikko / Main menu' },
-  { command: 'foods', description: 'Valitse lempiruoat / Foods' },
-  { command: 'restaurants', description: 'Valitse ravintolat / Restaurants' },
-  { command: 'check', description: 'Tarkista tämän päivän lounas / Check lunch' },
-  { command: 'checkall', description: 'Tarkista tulevat lounaat / Check all upcoming' },
-  { command: 'alerts', description: 'Aamuilmoitukset päälle/pois / Morning alerts' },
-  { command: 'addfood', description: 'Lisää oma ruoka / Add custom food' },
-  { command: 'removefood', description: 'Poista ruoka listalta / Remove food' },
-  { command: 'help', description: 'Näytä ohjeet / Help & info' },
+  { command: 'start', description: 'Avaa päävalikko' },
+  { command: 'foods', description: 'Valitse lempiruoat' },
+  { command: 'restaurants', description: 'Valitse ravintolat' },
+  { command: 'check', description: 'Tarkista tämän päivän lounas' },
+  { command: 'checkall', description: 'Tarkista tulevat lounaat tai hae ruokaa' },
+  { command: 'alerts', description: 'Aamuilmoitukset päälle tai pois' },
+  { command: 'addfood', description: 'Lisää oma ruoka listalle' },
+  { command: 'removefood', description: 'Poista ruoka listalta' },
+  { command: 'help', description: 'Näytä ohjeet ja komennot' },
 ];
 
 export const BOT_COMMANDS_FI = [
@@ -214,23 +214,10 @@ export const BOT_COMMANDS_FI = [
   { command: 'help', description: 'Näytä ohjeet ja komennot' },
 ];
 
-export const BOT_COMMANDS_EN = [
-  { command: 'start', description: 'Open main menu' },
-  { command: 'foods', description: 'Select favourite foods' },
-  { command: 'restaurants', description: 'Select restaurants' },
-  { command: 'check', description: 'Check today\'s lunch menu' },
-  { command: 'checkall', description: 'Check all upcoming lunch menus or search food' },
-  { command: 'alerts', description: 'Toggle morning alerts on or off' },
-  { command: 'addfood', description: 'Add custom food to list' },
-  { command: 'removefood', description: 'Remove food from list' },
-  { command: 'help', description: 'Show help and instructions' },
-];
-
 export async function setupBotCommands(bot: Bot): Promise<void> {
   try {
     await bot.api.setMyCommands(BOT_COMMANDS);
     await bot.api.setMyCommands(BOT_COMMANDS_FI, { language_code: 'fi' });
-    await bot.api.setMyCommands(BOT_COMMANDS_EN, { language_code: 'en' });
     await bot.api.setChatMenuButton({ menu_button: { type: 'commands' } });
     console.log('Telegram bot command picker registered successfully.');
   } catch (err) {
@@ -257,7 +244,7 @@ export function createBot(token: string): Bot {
       '<b>Tervetuloa Toiveruoka-bottiin!</b>\n\n' +
       'Tilaa ilmoitukset lempiruoistasi Unicafessa:\n' +
       '1. Valitse lempiruokasi (ruksaa boksit)\n' +
-      '2. Valitse suosikkiravintolasi\n' +
+      '2. Valitse suosikkiravintolasi (ruksaa boksit)\n' +
       '3. Joka aamu klo <b>10:00</b> botti tarkistaa listat ja ilmoittaa jos toiveruokaasi on tarjolla!\n' +
       '   (Voit kytkeä aamuilmoituksen päälle tai pois milloin vain päävalikosta tai komennolla /alerts)\n\n' +
       'Voit myös tarkistaa tulevat lounaat milloin vain komennolla <code>/checkall</code> tai hakea tiettyä ruokaa <code>/checkall &lt;ruoka&gt;</code>.\n\n' +
