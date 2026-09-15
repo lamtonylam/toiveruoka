@@ -1,20 +1,21 @@
-import { PrismaClient } from '@prisma/client';
-import dotenv from 'dotenv';
+import { PrismaClient } from '@prisma/client'
+import dotenv from 'dotenv'
 
-dotenv.config();
+dotenv.config()
 
-export const prisma = new PrismaClient();
+export const prisma = new PrismaClient()
 
 export const DEFAULT_FOODS = [
   'Kalapuikot',
   'Meksikolainen uunimakkara',
   'Rapeat kalapalat',
   'Kananugetit',
-  'Lohikeitto',
   'Pinaattiohukaiset',
   'Makaronilaatikko',
   'Hernekeitto',
-];
+  'Lihapullat',
+  'Makaronilaatikko',
+]
 
 /**
  * Seed default food options for a user (disabled initially so user can tick what they want).
@@ -22,7 +23,7 @@ export const DEFAULT_FOODS = [
 export async function ensureDefaultFoods(chatId: number): Promise<void> {
   const count = await prisma.foodSubscription.count({
     where: { chatId: BigInt(chatId) },
-  });
+  })
 
   if (count === 0) {
     await prisma.foodSubscription.createMany({
@@ -32,7 +33,7 @@ export async function ensureDefaultFoods(chatId: number): Promise<void> {
         enabled: false,
       })),
       skipDuplicates: true,
-    });
+    })
   }
 }
 
@@ -43,8 +44,8 @@ export async function getUserFoods(chatId: number): Promise<{ name: string; enab
   const items = await prisma.foodSubscription.findMany({
     where: { chatId: BigInt(chatId) },
     orderBy: { foodName: 'asc' },
-  });
-  return items.map((i) => ({ name: i.foodName, enabled: i.enabled }));
+  })
+  return items.map((i) => ({ name: i.foodName, enabled: i.enabled }))
 }
 
 /**
@@ -58,7 +59,7 @@ export async function toggleFood(chatId: number, foodName: string): Promise<bool
         foodName,
       },
     },
-  });
+  })
 
   if (!existing) {
     await prisma.foodSubscription.create({
@@ -67,8 +68,8 @@ export async function toggleFood(chatId: number, foodName: string): Promise<bool
         foodName,
         enabled: true,
       },
-    });
-    return true;
+    })
+    return true
   }
 
   const updated = await prisma.foodSubscription.update({
@@ -81,17 +82,17 @@ export async function toggleFood(chatId: number, foodName: string): Promise<bool
     data: {
       enabled: !existing.enabled,
     },
-  });
+  })
 
-  return updated.enabled;
+  return updated.enabled
 }
 
 /**
  * Add a new custom food for a user and enable it.
  */
 export async function addCustomFood(chatId: number, foodName: string): Promise<void> {
-  const trimmed = foodName.trim();
-  if (!trimmed) return;
+  const trimmed = foodName.trim()
+  if (!trimmed) return
 
   await prisma.foodSubscription.upsert({
     where: {
@@ -108,7 +109,7 @@ export async function addCustomFood(chatId: number, foodName: string): Promise<v
     update: {
       enabled: true,
     },
-  });
+  })
 }
 
 /**
@@ -120,18 +121,20 @@ export async function removeFood(chatId: number, foodName: string): Promise<void
       chatId: BigInt(chatId),
       foodName,
     },
-  });
+  })
 }
 
 /**
  * Get all restaurants selected by a user.
  */
-export async function getUserRestaurants(chatId: number): Promise<{ name: string; enabled: boolean }[]> {
+export async function getUserRestaurants(
+  chatId: number
+): Promise<{ name: string; enabled: boolean }[]> {
   const items = await prisma.restaurantSubscription.findMany({
     where: { chatId: BigInt(chatId) },
     orderBy: { restaurantName: 'asc' },
-  });
-  return items.map((i) => ({ name: i.restaurantName, enabled: i.enabled }));
+  })
+  return items.map((i) => ({ name: i.restaurantName, enabled: i.enabled }))
 }
 
 /**
@@ -145,7 +148,7 @@ export async function toggleRestaurant(chatId: number, restaurantName: string): 
         restaurantName,
       },
     },
-  });
+  })
 
   if (!existing) {
     await prisma.restaurantSubscription.create({
@@ -154,8 +157,8 @@ export async function toggleRestaurant(chatId: number, restaurantName: string): 
         restaurantName,
         enabled: true,
       },
-    });
-    return true;
+    })
+    return true
   }
 
   const updated = await prisma.restaurantSubscription.update({
@@ -168,9 +171,9 @@ export async function toggleRestaurant(chatId: number, restaurantName: string): 
     data: {
       enabled: !existing.enabled,
     },
-  });
+  })
 
-  return updated.enabled;
+  return updated.enabled
 }
 
 /**
@@ -197,7 +200,7 @@ export async function setRestaurantsBulk(
       update: {
         enabled,
       },
-    });
+    })
   }
 }
 
@@ -207,14 +210,17 @@ export async function setRestaurantsBulk(
 export async function getUserAlertPreference(chatId: number): Promise<boolean> {
   const pref = await prisma.userPreference.findUnique({
     where: { chatId: BigInt(chatId) },
-  });
-  return pref ? pref.alertsEnabled : true;
+  })
+  return pref ? pref.alertsEnabled : true
 }
 
 /**
  * Set the user's alert notification preference.
  */
-export async function setUserAlertPreference(chatId: number, alertsEnabled: boolean): Promise<boolean> {
+export async function setUserAlertPreference(
+  chatId: number,
+  alertsEnabled: boolean
+): Promise<boolean> {
   const pref = await prisma.userPreference.upsert({
     where: { chatId: BigInt(chatId) },
     create: {
@@ -224,22 +230,22 @@ export async function setUserAlertPreference(chatId: number, alertsEnabled: bool
     update: {
       alertsEnabled,
     },
-  });
-  return pref.alertsEnabled;
+  })
+  return pref.alertsEnabled
 }
 
 /**
  * Toggle the user's alert notification preference.
  */
 export async function toggleUserAlertPreference(chatId: number): Promise<boolean> {
-  const current = await getUserAlertPreference(chatId);
-  return setUserAlertPreference(chatId, !current);
+  const current = await getUserAlertPreference(chatId)
+  return setUserAlertPreference(chatId, !current)
 }
 
 export interface Subscriber {
-  chatId: number;
-  foods: string[];
-  restaurants: string[];
+  chatId: number
+  foods: string[]
+  restaurants: string[]
 }
 
 /**
@@ -250,46 +256,45 @@ export async function getAllSubscribers(): Promise<Subscriber[]> {
   const disabledPrefs = await prisma.userPreference.findMany({
     where: { alertsEnabled: false },
     select: { chatId: true },
-  });
-  const disabledChatIds = new Set(disabledPrefs.map((p) => Number(p.chatId)));
+  })
+  const disabledChatIds = new Set(disabledPrefs.map((p) => Number(p.chatId)))
 
   const activeFoods = await prisma.foodSubscription.findMany({
     where: { enabled: true },
-  });
+  })
 
   const activeRestos = await prisma.restaurantSubscription.findMany({
     where: { enabled: true },
-  });
+  })
 
-  const chatMap = new Map<number, { foods: string[]; restaurants: string[] }>();
+  const chatMap = new Map<number, { foods: string[]; restaurants: string[] }>()
 
   for (const f of activeFoods) {
-    const id = Number(f.chatId);
-    if (disabledChatIds.has(id)) continue;
+    const id = Number(f.chatId)
+    if (disabledChatIds.has(id)) continue
     if (!chatMap.has(id)) {
-      chatMap.set(id, { foods: [], restaurants: [] });
+      chatMap.set(id, { foods: [], restaurants: [] })
     }
-    chatMap.get(id)!.foods.push(f.foodName);
+    chatMap.get(id)!.foods.push(f.foodName)
   }
 
   for (const r of activeRestos) {
-    const id = Number(r.chatId);
-    if (disabledChatIds.has(id)) continue;
+    const id = Number(r.chatId)
+    if (disabledChatIds.has(id)) continue
     if (!chatMap.has(id)) {
-      chatMap.set(id, { foods: [], restaurants: [] });
+      chatMap.set(id, { foods: [], restaurants: [] })
     }
-    chatMap.get(id)!.restaurants.push(r.restaurantName);
+    chatMap.get(id)!.restaurants.push(r.restaurantName)
   }
 
-  const subscribers: Subscriber[] = [];
+  const subscribers: Subscriber[] = []
   for (const [chatId, data] of chatMap.entries()) {
     subscribers.push({
       chatId,
       foods: data.foods,
       restaurants: data.restaurants,
-    });
+    })
   }
 
-  return subscribers;
+  return subscribers
 }
-

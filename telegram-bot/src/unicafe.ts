@@ -1,8 +1,8 @@
 export interface Campus {
-  id: string;
-  name: string;
-  emoji: string;
-  restaurants: string[];
+  id: string
+  name: string
+  emoji: string
+  restaurants: string[]
 }
 
 export const CAMPUSES: Campus[] = [
@@ -41,31 +41,31 @@ export const CAMPUSES: Campus[] = [
     emoji: '',
     restaurants: ['Meilahti'],
   },
-];
+]
 
 export function getBackendUrl(): string {
-  const rawUrl = process.env.BACKEND_URL || 'http://backend:3000';
-  return rawUrl.trim().replace(/\/+$/, '');
+  const rawUrl = process.env.BACKEND_URL || 'http://backend:3000'
+  return rawUrl.trim().replace(/\/+$/, '')
 }
 
 /**
  * Checks if a date string like "Ma 12.09." matches today's date.
  */
 export function isToday(dateStr: string, targetDate = new Date()): boolean {
-  const match = dateStr.match(/(\d+)\.(\d+)\./);
-  if (!match) return false;
+  const match = dateStr.match(/(\d+)\.(\d+)\./)
+  if (!match) return false
 
-  const day = parseInt(match[1], 10);
-  const month = parseInt(match[2], 10);
+  const day = parseInt(match[1], 10)
+  const month = parseInt(match[2], 10)
 
-  return day === targetDate.getDate() && month === targetDate.getMonth() + 1;
+  return day === targetDate.getDate() && month === targetDate.getMonth() + 1
 }
 
 export interface FoodHit {
-  foodKeyword: string;
-  restaurantName: string;
-  dishName: string;
-  allergens: string;
+  foodKeyword: string
+  restaurantName: string
+  dishName: string
+  allergens: string
 }
 
 /**
@@ -75,12 +75,12 @@ export interface FoodHit {
 export async function fetchFoodFromBackend(
   food: string
 ): Promise<Record<string, [string, string, string][]>> {
-  const url = `${getBackendUrl()}/?food=${encodeURIComponent(food)}`;
-  const res = await fetch(url);
+  const url = `${getBackendUrl()}/?food=${encodeURIComponent(food)}`
+  const res = await fetch(url)
   if (!res.ok) {
-    throw new Error(`Backend API returned error: ${res.status}`);
+    throw new Error(`Backend API returned error: ${res.status}`)
   }
-  return res.json();
+  return res.json() as Promise<Record<string, [string, string, string][]>>
 }
 
 /**
@@ -92,16 +92,16 @@ export async function searchTodayFoods(
   targetDate = new Date(),
   fetcher = fetchFoodFromBackend
 ): Promise<FoodHit[]> {
-  const hits: FoodHit[] = [];
-  if (subscribedFoods.length === 0 || frequentedRestaurants.length === 0) return hits;
+  const hits: FoodHit[] = []
+  if (subscribedFoods.length === 0 || frequentedRestaurants.length === 0) return hits
 
-  const allowedRestos = new Set(frequentedRestaurants.map((r) => r.toLowerCase()));
+  const allowedRestos = new Set(frequentedRestaurants.map((r) => r.toLowerCase()))
 
   const promises = subscribedFoods.map(async (food) => {
     try {
-      const data = await fetcher(food);
+      const data = await fetcher(food)
       for (const [restoName, items] of Object.entries(data)) {
-        if (!allowedRestos.has(restoName.toLowerCase())) continue;
+        if (!allowedRestos.has(restoName.toLowerCase())) continue
 
         for (const [dateStr, dishName, allergens] of items) {
           if (isToday(dateStr, targetDate)) {
@@ -110,24 +110,21 @@ export async function searchTodayFoods(
               restaurantName: restoName,
               dishName,
               allergens: allergens || '',
-            });
+            })
           }
         }
       }
     } catch (err) {
-      console.error(`Failed to fetch food '${food}' from backend API:`, err);
+      console.error(`Failed to fetch food '${food}' from backend API:`, err)
     }
-  });
+  })
 
-  await Promise.all(promises);
-  return hits;
+  await Promise.all(promises)
+  return hits
 }
 
 export function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
 /**
@@ -135,24 +132,24 @@ export function escapeHtml(text: string): string {
  */
 export function formatHitsMessage(hits: FoodHit[], title = '<b>Toiveruoka Alert:</b>'): string {
   if (hits.length === 0) {
-    return 'Ei toiveruokia tänään valituissa ravintoloissasi.';
+    return 'Ei toiveruokia tänään valituissa ravintoloissasi.'
   }
 
-  let text = `${title}\n\n`;
+  let text = `${title}\n\n`
   for (const hit of hits) {
-    const alg = hit.allergens ? ` (${escapeHtml(hit.allergens)})` : '';
-    text += `• <b>${escapeHtml(hit.restaurantName)}</b>: ${escapeHtml(hit.dishName)}${alg}\n`;
+    const alg = hit.allergens ? ` (${escapeHtml(hit.allergens)})` : ''
+    text += `• <b>${escapeHtml(hit.restaurantName)}</b>: ${escapeHtml(hit.dishName)}${alg}\n`
   }
-  text += '\nHyvää ruokahalua!';
-  return text;
+  text += '\nHyvää ruokahalua!'
+  return text
 }
 
 export interface FoodUpcomingHit {
-  foodKeyword: string;
-  restaurantName: string;
-  date: string;
-  dishName: string;
-  allergens: string;
+  foodKeyword: string
+  restaurantName: string
+  date: string
+  dishName: string
+  allergens: string
 }
 
 /**
@@ -163,26 +160,26 @@ export async function searchUpcomingFoods(
   frequentedRestaurants?: string[],
   fetcher = fetchFoodFromBackend
 ): Promise<FoodUpcomingHit[]> {
-  const hits: FoodUpcomingHit[] = [];
-  if (foods.length === 0) return hits;
+  const hits: FoodUpcomingHit[] = []
+  if (foods.length === 0) return hits
 
   const allowedRestos =
     frequentedRestaurants && frequentedRestaurants.length > 0
       ? new Set(frequentedRestaurants.map((r) => r.toLowerCase()))
-      : null;
+      : null
 
-  const seen = new Set<string>();
+  const seen = new Set<string>()
 
   const promises = foods.map(async (food) => {
     try {
-      const data = await fetcher(food);
+      const data = await fetcher(food)
       for (const [restoName, items] of Object.entries(data)) {
-        if (allowedRestos && !allowedRestos.has(restoName.toLowerCase())) continue;
+        if (allowedRestos && !allowedRestos.has(restoName.toLowerCase())) continue
 
         for (const [dateStr, dishName, allergens] of items) {
-          const dedupeKey = `${restoName}::${dateStr}::${dishName}`.toLowerCase();
-          if (seen.has(dedupeKey)) continue;
-          seen.add(dedupeKey);
+          const dedupeKey = `${restoName}::${dateStr}::${dishName}`.toLowerCase()
+          if (seen.has(dedupeKey)) continue
+          seen.add(dedupeKey)
 
           hits.push({
             foodKeyword: food,
@@ -190,24 +187,24 @@ export async function searchUpcomingFoods(
             date: dateStr,
             dishName,
             allergens: allergens || '',
-          });
+          })
         }
       }
     } catch (err) {
-      console.error(`Failed to fetch food '${food}' from backend API:`, err);
+      console.error(`Failed to fetch food '${food}' from backend API:`, err)
     }
-  });
+  })
 
-  await Promise.all(promises);
-  return hits;
+  await Promise.all(promises)
+  return hits
 }
 
 export function parseDateOrder(dateStr: string): number {
-  const match = dateStr.match(/(\d+)\.(\d+)\./);
-  if (!match) return 0;
-  const day = parseInt(match[1], 10);
-  const month = parseInt(match[2], 10);
-  return month * 100 + day;
+  const match = dateStr.match(/(\d+)\.(\d+)\./)
+  if (!match) return 0
+  const day = parseInt(match[1], 10)
+  const month = parseInt(match[2], 10)
+  return month * 100 + day
 }
 
 /**
@@ -219,37 +216,36 @@ export function formatUpcomingHitsMessage(
   emptyMessage = 'Ei tulevia toiveruokia valituissa ravintoloissasi.'
 ): string {
   if (hits.length === 0) {
-    return emptyMessage;
+    return emptyMessage
   }
 
   // Group by restaurantName
-  const byRestaurant = new Map<string, FoodUpcomingHit[]>();
+  const byRestaurant = new Map<string, FoodUpcomingHit[]>()
   for (const hit of hits) {
     if (!byRestaurant.has(hit.restaurantName)) {
-      byRestaurant.set(hit.restaurantName, []);
+      byRestaurant.set(hit.restaurantName, [])
     }
-    byRestaurant.get(hit.restaurantName)!.push(hit);
+    byRestaurant.get(hit.restaurantName)!.push(hit)
   }
 
   // Sort restaurants alphabetically
-  const sortedRestos = Array.from(byRestaurant.keys()).sort((a, b) => a.localeCompare(b));
+  const sortedRestos = Array.from(byRestaurant.keys()).sort((a, b) => a.localeCompare(b))
 
-  let text = `${title}\n\n`;
+  let text = `${title}\n\n`
 
-  const sections: string[] = [];
+  const sections: string[] = []
   for (const resto of sortedRestos) {
-    const items = byRestaurant.get(resto)!;
-    items.sort((a, b) => parseDateOrder(a.date) - parseDateOrder(b.date));
-    let section = `<b>${escapeHtml(resto)}</b>\n`;
+    const items = byRestaurant.get(resto)!
+    items.sort((a, b) => parseDateOrder(a.date) - parseDateOrder(b.date))
+    let section = `<b>${escapeHtml(resto)}</b>\n`
     for (const item of items) {
-      const alg = item.allergens ? ` <i>(${escapeHtml(item.allergens)})</i>` : '';
-      section += `• <b>${escapeHtml(item.date)}</b>: ${escapeHtml(item.dishName)}${alg}\n`;
+      const alg = item.allergens ? ` <i>(${escapeHtml(item.allergens)})</i>` : ''
+      section += `• <b>${escapeHtml(item.date)}</b>: ${escapeHtml(item.dishName)}${alg}\n`
     }
-    sections.push(section.trimEnd());
+    sections.push(section.trimEnd())
   }
 
-  text += sections.join('\n\n');
-  text += '\n\nHyvää ruokahalua!';
-  return text;
+  text += sections.join('\n\n')
+  text += '\n\nHyvää ruokahalua!'
+  return text
 }
-
